@@ -12,6 +12,7 @@ from primitive_db.core import (
     select,
     update,
 )
+from primitive_db.decorators import create_cacher
 from primitive_db.parser import parse_condition, parse_insert_values
 from primitive_db.utils import (
     delete_table_data,
@@ -57,6 +58,7 @@ def print_help():
 
 def run():
     print_help()
+    cache_result = create_cacher()
 
     while True:
         metadata = load_metadata("db_meta.json")
@@ -111,13 +113,18 @@ def run():
                 continue
 
             table_name = args[1]
-            table_exists = table_name in metadata
+            
+            if table_name not in metadata:
+                print(f'Ошибка: Таблица "{table_name}" не существует.')
+                continue
 
-            drop_table(metadata, table_name)
+            updated_metadata = drop_table(metadata, table_name)
 
-            if table_exists:
+            if updated_metadata is not None:
+                metadata = updated_metadata
                 save_metadata("db_meta.json", metadata)
-                delete_table_data(args[1])
+                delete_table_data(table_name)
+                cache_result = create_cacher()
 
         elif command == "insert":
             parts = user_input.split(maxsplit=3)
@@ -144,6 +151,7 @@ def run():
 
             if updated_data is not None:
                 save_table_data(table_name, updated_data)
+                cache_result = create_cacher()
         
         elif command == "select":
             parts = user_input.split(maxsplit=4)
@@ -181,7 +189,13 @@ def run():
                     continue
 
             table_data = load_table_data(table_name)
-            selected_data = select(table_data, where_clause)
+            where_key = tuple(sorted(where_clause.items())) if where_clause else None
+            cache_key = (table_name, where_key)
+
+            selected_data = cache_result(
+                cache_key,
+                lambda: select(table_data, where_clause),
+                )
 
             table = PrettyTable()
             table.field_names = list(metadata[table_name].keys())
@@ -244,6 +258,7 @@ def run():
             if updated_ids:
                 updated_data = update(table_data, set_clause, where_clause)
                 save_table_data(table_name, updated_data)
+                cache_result = create_cacher()
 
                 for record_id in updated_ids:
                     print(
@@ -292,13 +307,16 @@ def run():
 
             if deleted_ids:
                 updated_data = delete(table_data, where_clause)
-                save_table_data(table_name, updated_data)
 
-                for record_id in deleted_ids:
-                    print(
-                        f'Запись с ID={record_id} успешно удалена '
-                        f'из таблицы "{table_name}".'
-                    )
+                if updated_data is not None:
+                    save_table_data(table_name, updated_data)
+                    cache_result = create_cacher()
+
+                    for record_id in deleted_ids:
+                        print(
+                            f"Запись с ID={record_id} успешно удалена "
+                            f'из таблицы "{table_name}".'
+                            )
 
         elif command == "info":
             if len(args) != 2:
