@@ -26,3 +26,7 @@ list_tables
 drop_table users
 Таблица "users" успешно удалена.
 ```
+
+## Демонстрация работы программы
+
+[![Демонстрация работы базы данных](https://asciinema.org/a/a79AxuIZUzGut6fQ.svg)](https://asciinema.org/a/a79AxuIZUzGut6fQ)
