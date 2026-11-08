@@ -29,4 +29,4 @@ drop_table users
 
 ## Демонстрация работы программы
 
-[![Демонстрация работы базы данных](https://asciinema.org/a/a79AxuIZUzGut6fQ.svg)](https://asciinema.org/a/a79AxuIZUzGut6fQ)
+[Видео демонстрация работы программы](https://asciinema.org/a/a79AxuIZUzGut6fQ)
