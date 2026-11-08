@@ -1,4 +1,6 @@
 def parse_value(value):
+    """Преобразует строку в значение нужного типа."""
+
     value = value.strip()
 
     if len(value) >= 2 and value.startswith('"') and value.endswith('"'):
@@ -19,6 +21,8 @@ def parse_value(value):
     
 
 def parse_condition(condition):
+    """Разбирает условие на равенство."""
+
     if "=" not in condition:
         raise ValueError(
             f"Некорректное значение: {condition}. Попробуйте снова."
@@ -38,6 +42,8 @@ def parse_condition(condition):
 
 
 def parse_insert_values(text):
+    """Разбирает значения для добавления записи."""
+    
     text = text.strip()
 
     if not text.startswith("(") or not text.endswith(")"):

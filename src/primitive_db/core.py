@@ -1,13 +1,16 @@
+from primitive_db.constants import ALLOWED_NAME_CHARS, VALID_TYPES
 from primitive_db.decorators import confirm_action, handle_db_errors, log_time
 
 
 @handle_db_errors
 def create_table(metadata, table_name, columns):
+    """Создаёт таблицу и сохраняет её структуру в метаданных."""
+
     if table_name in metadata:
         print(f'Ошибка: Таблица "{table_name}" уже существует.')
         return metadata
 
-    allowed_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
+    allowed_chars = ALLOWED_NAME_CHARS
 
     if not table_name or not all(char in allowed_chars for char in table_name):
         print(f"Некорректное значение: {table_name}. Попробуйте снова.")
@@ -25,7 +28,7 @@ def create_table(metadata, table_name, columns):
         if (
             not name
             or name in table_columns
-            or data_type not in ("int", "str", "bool")
+            or data_type not in VALID_TYPES
         ):
             print(f"Некорректное значение: {column}. Попробуйте снова.")
             return metadata
@@ -49,6 +52,8 @@ def create_table(metadata, table_name, columns):
 @handle_db_errors
 @confirm_action("удаление таблицы")
 def drop_table(metadata, table_name):
+    """Удаляет таблицу из метаданных."""
+
     if table_name not in metadata:
         print(f'Ошибка: Таблица "{table_name}" не существует.')
         return metadata
@@ -61,6 +66,7 @@ def drop_table(metadata, table_name):
 
 
 def check_value_type(value, data_type):
+    """Проверяет соответствие значения указанному типу."""
     if data_type == "int":
         return type(value) is int
     elif data_type == "str":
@@ -74,6 +80,8 @@ def check_value_type(value, data_type):
 @handle_db_errors
 @log_time
 def insert(metadata, table_name, table_data, values):
+    """Добавляет новую запись со сгенерированным ID."""
+
     if table_name not in metadata:
         print(f'Ошибка: Таблица "{table_name}" не существует.')
         return None
@@ -113,6 +121,8 @@ def insert(metadata, table_name, table_data, values):
 @handle_db_errors
 @log_time
 def select(table_data, where_clause=None):
+    """Возвращает записи по условию отбора."""
+    
     if where_clause is None:
         return table_data
 
@@ -134,6 +144,8 @@ def select(table_data, where_clause=None):
 
 @handle_db_errors
 def update(table_data, set_clause, where_clause):
+    """Обновляет записи по условию."""
+
     for record in table_data:
         matches = True
 
@@ -152,6 +164,8 @@ def update(table_data, set_clause, where_clause):
 @handle_db_errors
 @confirm_action("удаление записей")
 def delete(table_data, where_clause):
+    """Удаляет записи по условию."""
+
     result = []
 
     for record in table_data:

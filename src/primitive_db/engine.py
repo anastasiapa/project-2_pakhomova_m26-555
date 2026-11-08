@@ -3,6 +3,7 @@ import shlex
 import prompt
 from prettytable import PrettyTable
 
+from primitive_db.constants import META_FILE
 from primitive_db.core import (
     check_value_type,
     create_table,
@@ -57,11 +58,13 @@ def print_help():
 
 
 def run():
+    """Запускает обработку команд пользователя."""
+
     print_help()
     cache_result = create_cacher()
 
     while True:
-        metadata = load_metadata("db_meta.json")
+        metadata = load_metadata(META_FILE)
         user_input = prompt.string("Введите команду: ")
 
         try:
@@ -105,7 +108,7 @@ def run():
             create_table(metadata, table_name, columns)
 
             if table_name in metadata:
-                save_metadata("db_meta.json", metadata)
+                save_metadata(META_FILE, metadata)
 
         elif command == "drop_table":
             if len(args) != 2:
@@ -122,7 +125,7 @@ def run():
 
             if updated_metadata is not None:
                 metadata = updated_metadata
-                save_metadata("db_meta.json", metadata)
+                save_metadata(META_FILE, metadata)
                 delete_table_data(table_name)
                 cache_result = create_cacher()
 
